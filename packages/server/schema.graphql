@@ -1,26 +1,27 @@
 type PageInfo {
-  endCursor: ID
-  hasNextPage: Boolean
+    endCursor: ID
+    hasNextPage: Boolean
 }
 
 type Pokemon {
-  id: ID!
-  name: String
-  types: [String]
+    id: ID!
+    name: String
+    types: [String]
+    url: String
 }
 
 type PokemonEdge {
-  cursor: ID!
-  node: Pokemon
+    cursor: ID!
+    node: Pokemon
 }
 
 type PokemonsConnection {
-  edges: [PokemonEdge]
-  pageInfo: PageInfo
+    edges: [PokemonEdge]
+    pageInfo: PageInfo
 }
 
 type Query {
-  pokemons(q: String, after: ID, limit: Int): PokemonsConnection
+    pokemons(q: String, after: ID, limit: Int): PokemonsConnection
 
-  pokemonsByType(type: String!): PokemonsConnection
+    pokemonsByType(type: String!): PokemonsConnection
 }
