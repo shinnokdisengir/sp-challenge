@@ -1,10 +1,18 @@
-import React, { FunctionComponent } from 'react'
+import React, { FunctionComponent, HTMLProps } from 'react'
 import PokeTable from './PokeTable'
 import styled from 'styled-components'
 
-interface Props {}
-const App: FunctionComponent<Props> = () => {
-    return <PokeTable />
+interface Props extends HTMLProps<HTMLDivElement> {}
+const App: FunctionComponent<Props> = ({ className }) => {
+    return (
+        <div className={className}>
+            <PokeTable className='table' />
+        </div>
+    )
 }
-const StyledApp = styled(App)``
+const StyledApp = styled(App)`
+    padding: 16px;
+    .table {
+    }
+`
 export default StyledApp
