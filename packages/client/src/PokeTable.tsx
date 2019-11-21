@@ -1,28 +1,47 @@
 import { useQuery } from '@apollo/react-hooks'
 import { Table, Tag, Typography } from 'antd'
-import { TableProps, WithStore } from 'antd/lib/table'
+import {
+    TableProps,
+    WithStore,
+    PaginationConfig,
+    SorterResult,
+    TableCurrentDataSource
+} from 'antd/lib/table'
 import { gql } from 'apollo-boost'
-import React, { forwardRef } from 'react'
+import React, { forwardRef, useCallback, useState } from 'react'
 import styled from 'styled-components'
 import { Pokemon } from './models'
 
 const { Column } = Table
 const { Text } = Typography
 
+type OnTableChange = <T>(
+    pagination: PaginationConfig,
+    filters: Record<keyof T, string[]>,
+    sorter: SorterResult<T>,
+    extra: TableCurrentDataSource<T>
+) => void
+
 const mapColorType = {
     grass: 'green',
     flying: 'geekblue',
+    ice: 'cyan',
     poison: 'lime',
-    bug: 'purple',
-    electric: 'cyan',
+    psychic: 'purple',
+    electric: 'geekblue',
     rock: 'magenta',
-    water: 'blue'
+    water: 'blue',
+    fire: 'red',
+    dragon: 'volcano',
+    ground: 'orange',
+    fairy: 'gold',
+    bug: 'green'
 }
 
 const POKEMONS = gql`
-    {
+    query Pokemons($q: String, $types: [String]) {
         pokemonsTypes
-        pokemons(q: "bu") {
+        pokemons(q: $q, types: $types) {
             edges {
                 node {
                     id
@@ -39,11 +58,35 @@ interface Props extends Omit<TableProps<Pokemon>, keyof WithStore> {}
 
 const PokeTable = forwardRef<Table<Pokemon>, Props>(
     ({ className, ...props }, ref) => {
-        const { loading, error, data } = useQuery(POKEMONS)
-        if (error) return <p>Error :(</p>
+        const [q, setQ] = useState<string | undefined>()
+        const [types, setTypes] = useState<Array<string>>([])
+        const { loading, error, data, fetchMore } = useQuery(POKEMONS, {
+            variables: { q, types }
+        })
+
+        const handleChange: OnTableChange = useCallback(
+            (
+                pagination,
+                filters: { q?: string; types?: string[] },
+                sorter,
+                extra
+            ) => {
+                console.log(
+                    'pagination, filters, sorter, extra',
+                    pagination,
+                    filters,
+                    sorter,
+                    extra
+                )
+                if (filters.q) setQ(filters.q)
+                if (filters.types) setTypes(filters.types)
+            },
+            []
+        )
 
         console.log('data', data)
 
+        if (error) return <p>Error :(</p>
         const dataSource: Array<Pokemon> = !loading
             ? data.pokemons.edges.map(e => e.node)
             : []
@@ -56,6 +99,7 @@ const PokeTable = forwardRef<Table<Pokemon>, Props>(
                 loading={loading}
                 dataSource={dataSource}
                 rowKey='id'
+                onChange={handleChange}
             >
                 <Column<Pokemon>
                     title='Name'
