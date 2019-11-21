@@ -21,7 +21,14 @@ type PokemonsConnection {
 }
 
 type Query {
-    pokemons(q: String, after: ID, limit: Int): PokemonsConnection
+    pokemons(
+        q: String
+        types: [String]
+        after: ID
+        limit: Int
+    ): PokemonsConnection
+    pokemonsTypes: [String]!
 
-    pokemonsByType(type: String!): PokemonsConnection
+    # Not needed
+    # pokemonsByType(type: String!): PokemonsConnection
 }

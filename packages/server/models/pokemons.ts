@@ -1,12 +1,16 @@
-import { pipe } from 'fp-ts/lib/pipeable'
-import * as O from 'fp-ts/lib/Option'
 import * as A from 'fp-ts/lib/Array'
 import { identity } from 'fp-ts/lib/function'
+import * as O from 'fp-ts/lib/Option'
+import { pipe } from 'fp-ts/lib/pipeable'
+import { tryCatch } from 'fp-ts/lib/TaskEither'
 import { data } from '../data/pokemons'
-import { toConnection, slice } from '../functions'
+import { slice, toConnection } from '../functions'
 import { Connection } from '../types'
+import intersectionBy from 'lodash/intersectionBy'
+import lowerCase from 'lodash/lowerCase'
+import keys from 'lodash/keys'
 
-interface Pokemon {
+export interface Pokemon {
     id: string
     name: string
     types: string[]
@@ -19,14 +23,19 @@ export function query(args: {
     after?: string
     limit?: number
     q?: string
+    types?: string[]
 }): Connection<Pokemon> {
-    const { after, q, limit = SIZE } = args
+    const { after, q, types = [], limit = SIZE } = args
 
     const filterByQ: (as: Pokemon[]) => Pokemon[] =
         // filter only if q is defined
         q === undefined
             ? identity
             : A.filter(p => p.name.toLowerCase().includes(q.toLowerCase()))
+
+    const filterByTypes: (as: Pokemon[]) => Pokemon[] = types.length
+        ? A.filter(p => intersectionBy(p.types, types, lowerCase).length > 0)
+        : identity
 
     const sliceByAfter: (as: Pokemon[]) => Pokemon[] =
         // filter only if q is defined
@@ -43,21 +52,32 @@ export function query(args: {
                       )
                   )
     // TODO get images from https://pokeapi.co/api/v2/pokemon/{name}/
-    // const addImage = tryCatch<Error, Pokemon[]>(
-    //     async (list: Array<Pokemon>) => {
-    //         return list
-    //     },
-    //     reason => new Error('errore')
+    // const addImageTask = tryCatch<Error, Pokemon>(
+    //     async () => JSON.parse('{"name": "Ciccio"}'),
+    //     reason => new Error(String(reason))
     // )
 
     const results: Pokemon[] = pipe(
         data,
         filterByQ,
+        filterByTypes,
         sliceByAfter,
         // slicing limit + 1 because the `toConnection` function should known the connection size to determine if there are more results
         slice(0, limit + 1)
-        // addImage
+        // addImageTask,
     )
 
     return toConnection(results, limit)
+}
+
+export function getTypes(): string[] {
+    return keys(
+        data.reduce(
+            (a, e) => ({
+                ...a,
+                ...e.types.reduce((a, t) => ({ ...a, [t]: true }), {})
+            }),
+            {}
+        )
+    )
 }
