@@ -17,13 +17,6 @@ import { Pokemon } from './models'
 const { Column } = Table
 const { Text } = Typography
 
-type OnTableChange = <T>(
-    pagination: PaginationConfig,
-    filters: Record<keyof T, string[]>,
-    sorter: SorterResult<T>,
-    extra: TableCurrentDataSource<T>
-) => void
-
 const mapColorType = {
     grass: 'green',
     flying: 'geekblue',
