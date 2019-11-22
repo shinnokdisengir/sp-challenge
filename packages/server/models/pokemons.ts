@@ -13,6 +13,7 @@ import keys from 'lodash/keys'
 export interface Pokemon {
     id: string
     name: string
+    classification: string
     types: string[]
     url?: string
 }
