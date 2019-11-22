@@ -91,7 +91,9 @@ const PokeTable = forwardRef<HTMLDivElement, Props>(
         )
 
         const handleSearch = useCallback(
-            ({ target: { value } }) => (setDataSource([]), setName(value)),
+            ({ target: { value } }) => (
+                setDataSource([]), setName(value), setAfter(undefined)
+            ),
             []
         )
 
@@ -163,6 +165,7 @@ const PokeTable = forwardRef<HTMLDivElement, Props>(
                             dataIndex='name'
                             ellipsis
                             filterDropdown={renderSearch}
+                            filteredValue={name ? [name] : undefined}
                             onFilterDropdownVisibleChange={setFilterOpened}
                             render={name => <Text strong>{name}</Text>}
                         />
